@@ -1,0 +1,6 @@
+numpy>=1.26
+pandas>=2.1
+h5py>=3.10
+scikit-learn>=1.4
+matplotlib>=3.8
+jupyter
