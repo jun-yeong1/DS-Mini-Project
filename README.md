@@ -21,7 +21,7 @@
 │   ├── 02_feature_engineering.ipynb
 │   └── 03_modeling.ipynb
 ├── src/
-│   ├── preprocess.py      # .mat → 셀 단위 표 (data/processed/cells.pkl)
+│   ├── preprocess.py      # 데이터인 .mat → 셀 단위 표 변경 (data/processed/cells.pkl)
 │   ├── features.py        # feature 정의, feature 세트(A/B/C), 모델링 대상 셀
 │   └── train.py           # 학습·검증·테스트, 결과 저장
 ├── results/
@@ -39,10 +39,11 @@ cd DS-Mini-Project
 pip install -r requirements.txt
 ```
 
-원본 `.mat` 3개를 `data/` 폴더에 그대로 넣는다(다운로드 방법은 [data/README.md](data/README.md) 참고). 실행 순서:
+원본 `.mat` 3개를 `data/` 폴더에 그대로 넣는다. 실행 순서:
 
 ```bash
 python src/preprocess.py   # 원본 .mat → data/processed/cells.pkl (약 1초)
+python src/feature.py.     # 사용할 feature 정의
 python src/train.py        # 모델 학습·평가 → results/ (약 5초)
 ```
 
@@ -126,13 +127,12 @@ Batch 3 (추가):
 - 원인 가설(검증 전):
   1. 학습 정답 범위(534~1,074) 밖이라 외삽이 안 된다(트리 계열은 특히).
   2. 같은 ΔQ 분산에서도 Batch 2 legacy는 Batch 1 추세보다 수명이 짧다. 선형 Baseline도 Batch 2 legacy 수명을 평균 1.32배로 과대 예측한다. 같은 충전 정책에서도 Batch 2 legacy가 Batch 1보다 35~45% 짧은 것과 같은 현상으로, Batch 간 기준 차이(셀 제조·수집 시기 등)가 의심된다.
-- 개선 방향: Batch 효과 보정, 반복 정책 단위 분할로 Valid 안정화(hold-out 확대), 외삽에 강한 모델의 선택 규칙 재검토
+- 개선 방향: Batch 효과 보정, 반복 정책 단위 분할로 Valid 안정화, 외삽에 강한 모델의 선택 규칙 재검토
 
 ## ESS 도메인 해석
 
-- **활용**: 초기 100사이클의 전압별 곡선 변화(ΔQ)로 후반 열화를 일찍 감지할 수 있다면, 셀 교체와 점검의 우선순위를 사전에 정하는 데 쓸 수 있다. 같은 충전 시간이라도 단계 간 전류를 균일하게 가져가는 편이 수명에 유리한 경향이 있어 급속충전 운영 정책 설계의 참고가 된다(상관 기반이며 인과는 아니다).
+- **활용**: 초기 100사이클의 전압별 곡선 변화(ΔQ)로 후반 열화를 일찍 감지할 수 있다면, 셀 교체와 점검의 우선순위를 사전에 정하는 데 쓸 수 있다. 같은 충전 시간이라도 단계 간 전류를 균일하게 가져가는 편이 수명에 유리한 경향이 있어 급속충전 운영 시 참고가 된다.
 - **한계**: 현재 Batch 2 성능은 원논문보다 크게 낮고(Gap +20.6%p), 특히 학습 범위보다 짧은 수명의 셀에서 크게 틀린다. 즉 **새로운 Batch·구조의 셀에는 그대로 적용하기 어렵다.** 가장 긴 수명 구간(EOL 미도달 셀)은 검증하지 못했고, 학습 셀이 36개뿐이다.
-- **실 배포에 필요한 것**: 대상 셀 묶음의 일부로 재보정(Batch 효과 보정), 더 많은 셀로 학습·검증, 수명 범위가 다른 셀에 대한 별도 검증.
 
 ## 참고문헌
 
