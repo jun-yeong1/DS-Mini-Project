@@ -66,6 +66,7 @@ def run():
                        mape_train_cv=mape(tr.y, cv_pred), mape_valid=mape(va.y, valid),
                        mape_test_b2=mape(b2.y, final.predict(X(b2))),
                        mape_test_b3=mape(b3.y, final.predict(X(b3))))
+            
             row['gap_train_valid'] = row['mape_valid'] - row['mape_train_cv']      # (+) 과적합 의심
             row['gap_valid_test'] = row['mape_test_b2'] - row['mape_valid']        # (+) 배치 간 일반화 저하 의심
             row['gap_target_test'] = row['mape_test_b2'] - TARGET_MAPE             # 원논문(9.1%) 대비
@@ -85,8 +86,8 @@ def run():
     pred['group'] = np.where(pred.newstruct, 'b2-new', 'b2-legacy')
     pred[['uid', 'policy', 'group', 'cycle_life', 'life_pred', 'ape_pct']].round(1).to_csv(
         os.path.join(RESULTS, 'predictions_b2.csv'), index=False)
-    return res, best
 
+    return res, best
 
 if __name__ == '__main__':
     res, best = run()
